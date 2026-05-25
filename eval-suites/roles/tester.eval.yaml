@@ -1,0 +1,41 @@
+schema_version: "1"
+id: tester-eval
+role: TESTER
+description: Проверки качества output агента TESTER — тесты добавлены, запущены, детерминированы
+tags: [tester, quality, tests]
+
+checks:
+  - id: test-files-added
+    summary: Добавлены файлы с тестами
+    type: regex
+    target: diff
+    pattern: "\\+\\+\\+ b/.*\\.test\\.(ts|js)"
+    severity: error
+
+  - id: tests-executed
+    summary: Тесты были запущены
+    type: grep
+    target: output
+    pattern: "pass|fail|vitest|test.*run"
+    severity: error
+
+  - id: no-network-calls
+    summary: Тесты не содержат сетевых вызовов
+    type: no-match
+    target: diff
+    pattern: "\\+.*(fetch|axios|http\\.get|https\\.get)\\("
+    severity: warning
+
+  - id: no-time-dependency
+    summary: Тесты не зависят от текущего времени
+    type: no-match
+    target: diff
+    pattern: "\\+.*Date\\.now\\(\\)|\\+.*new Date\\(\\)"
+    severity: warning
+
+  - id: has-assertions
+    summary: Тесты содержат assertions
+    type: grep
+    target: diff
+    pattern: "expect\\(|assert\\.|toBe|toEqual|toThrow"
+    severity: error

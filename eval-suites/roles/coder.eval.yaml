@@ -1,0 +1,40 @@
+schema_version: "1"
+id: coder-eval
+role: CODER
+description: Проверки качества output агента CODER — минимальные диффы, верификация, git-гигиена
+tags: [coder, quality, diff]
+
+checks:
+  - id: diff-is-scoped
+    summary: Дифф содержит только файлы из scope задачи
+    type: regex
+    target: diff
+    pattern: "^(\\+\\+\\+|---) [ab]/"
+    severity: warning
+
+  - id: no-unrelated-formatting
+    summary: Нет массовых форматирующих изменений вне scope
+    type: command
+    command: "git diff --stat HEAD~1 | tail -1 | awk '{if ($1 > 20) exit 1}'"
+    severity: warning
+
+  - id: tests-ran
+    summary: В output упоминается запуск тестов
+    type: grep
+    target: output
+    pattern: "test|vitest|jest|pass|fail"
+    severity: error
+
+  - id: no-console-log
+    summary: Нет console.log в production-коде
+    type: no-match
+    target: diff
+    pattern: "\\+.*console\\.log\\("
+    severity: error
+
+  - id: commit-message-format
+    summary: Коммит-сообщение следует формату type: description
+    type: regex
+    target: commit-message
+    pattern: "^(feat|fix|refactor|docs|test|chore|perf|ci): .+"
+    severity: error

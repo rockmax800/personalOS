@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentplane.dev/schemas/eval-suite.schema.json",
+  "title": "agentplane eval suite (v1)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "id", "role", "description", "checks"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1" },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "minLength": 1
+    },
+    "role": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Agent role ID this suite evaluates (e.g. CODER, REVIEWER) or '_protected' for cross-role checks"
+    },
+    "description": { "type": "string", "minLength": 1 },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/check" }
+    }
+  },
+  "$defs": {
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "summary", "type"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "minLength": 1
+        },
+        "summary": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "type": {
+          "type": "string",
+          "enum": ["grep", "file-exists", "command", "regex", "no-match"],
+          "description": "grep: search for pattern in output; file-exists: verify path exists; command: run shell command and check exit code; regex: match output against regex; no-match: ensure pattern is absent"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["error", "warning"],
+          "default": "error"
+        },
+        "pattern": {
+          "type": "string",
+          "description": "Pattern to search for (grep, regex, no-match types)"
+        },
+        "path": {
+          "type": "string",
+          "description": "File path to check (file-exists type)"
+        },
+        "command": {
+          "type": "string",
+          "description": "Shell command to run (command type)"
+        },
+        "target": {
+          "type": "string",
+          "enum": ["diff", "files", "output", "commit-message"],
+          "default": "diff",
+          "description": "What to evaluate: diff (changed code), files (touched files), output (agent comment/output), commit-message"
+        }
+      }
+    }
+  }
+}

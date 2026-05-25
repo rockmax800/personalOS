@@ -1,0 +1,33 @@
+schema_version: "1"
+id: planner-eval
+role: PLANNER
+description: Проверки качества output агента PLANNER — задачи атомарные, с владельцами и зависимостями
+tags: [planner, quality, tasks]
+
+checks:
+  - id: tasks-created
+    summary: Output содержит созданные задачи
+    type: grep
+    target: output
+    pattern: "task|TODO|DOING|created|backlog"
+    severity: error
+
+  - id: has-owners
+    summary: Задачи имеют назначенных владельцев
+    type: grep
+    target: output
+    pattern: "owner|assign|CODER|TESTER|REVIEWER|DOCS"
+    severity: error
+
+  - id: has-dependencies
+    summary: Указаны зависимости между задачами
+    type: grep
+    target: output
+    pattern: "depends|after|before|blocked_by|prerequisite"
+    severity: warning
+
+  - id: no-code-changes
+    summary: PLANNER не должен менять production-код
+    type: command
+    command: "git diff --name-only HEAD~1 | grep -E '\\.(ts|js|json)$' | grep -v 'agentplane\\|task' | wc -l | awk '{if ($1 > 0) exit 1}'"
+    severity: error

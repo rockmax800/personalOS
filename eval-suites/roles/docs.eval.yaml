@@ -1,0 +1,33 @@
+schema_version: "1"
+id: docs-eval
+role: DOCS
+description: Проверки качества output агента DOCS — документация обновлена, артефакты созданы
+tags: [docs, quality, documentation]
+
+checks:
+  - id: docs-updated
+    summary: Обновлены документационные файлы
+    type: regex
+    target: diff
+    pattern: "\\+\\+\\+ b/.*\\.(md|mdx)"
+    severity: error
+
+  - id: task-artifact-created
+    summary: Создан артефакт задачи
+    type: grep
+    target: output
+    pattern: "README|artifact|documentation"
+    severity: warning
+
+  - id: no-stale-references
+    summary: Нет ссылок на несуществующие файлы в документации
+    type: no-match
+    target: diff
+    pattern: "\\[.*\\]\\((?!https?://|#|mention://)[^)]*\\.ts[^)]*\\)"
+    severity: warning
+
+  - id: no-production-code
+    summary: DOCS не должен менять production-код
+    type: command
+    command: "git diff --name-only HEAD~1 | grep -E '\\.(ts|js)$' | grep -v '\\.test\\.' | grep -v '\\.d\\.' | wc -l | awk '{if ($1 > 0) exit 1}'"
+    severity: error

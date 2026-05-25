@@ -1,0 +1,33 @@
+schema_version: "1"
+id: orchestrator-eval
+role: ORCHESTRATOR
+description: Проверки качества output агента ORCHESTRATOR — план, approval, координация
+tags: [orchestrator, quality, coordination]
+
+checks:
+  - id: has-plan
+    summary: Output содержит execution plan
+    type: grep
+    target: output
+    pattern: "plan|step|phase"
+    severity: error
+
+  - id: has-agent-assignments
+    summary: План содержит назначения агентам
+    type: grep
+    target: output
+    pattern: "CODER|TESTER|REVIEWER|PLANNER|DOCS|agent"
+    severity: error
+
+  - id: has-approval-prompt
+    summary: Запрашивает approval перед выполнением
+    type: grep
+    target: output
+    pattern: "approve|confirm|proceed|cancel"
+    severity: warning
+
+  - id: no-direct-code-changes
+    summary: ORCHESTRATOR не должен менять код напрямую
+    type: command
+    command: "git diff --name-only HEAD~1 | grep -vE '\\.(md|json)$' | wc -l | awk '{if ($1 > 0) exit 1}'"
+    severity: error

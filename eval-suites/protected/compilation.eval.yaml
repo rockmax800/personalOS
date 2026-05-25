@@ -1,0 +1,18 @@
+schema_version: "1"
+id: protected-compilation
+role: _protected
+description: "Protected: проект компилируется после изменений агента"
+tags: [protected, compilation, typescript]
+
+checks:
+  - id: tsc-passes
+    summary: TypeScript компиляция проходит без ошибок
+    type: command
+    command: "npx tsc --noEmit 2>&1 | tail -1 | grep -qv 'error TS'"
+    severity: error
+
+  - id: build-passes
+    summary: Проект собирается успешно
+    type: command
+    command: "bun run build 2>&1; test ${PIPESTATUS[0]} -eq 0"
+    severity: error

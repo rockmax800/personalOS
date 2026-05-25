@@ -1,0 +1,18 @@
+schema_version: "1"
+id: protected-lint
+role: _protected
+description: "Protected: lint и formatting проходят после изменений"
+tags: [protected, lint, formatting]
+
+checks:
+  - id: eslint-passes
+    summary: ESLint не выдаёт ошибок на изменённых файлах
+    type: command
+    command: "git diff --name-only HEAD~1 -- '*.ts' '*.js' '*.cjs' | xargs -r npx eslint --no-error-on-unmatched-pattern 2>&1; test ${PIPESTATUS[0]} -eq 0"
+    severity: error
+
+  - id: prettier-check
+    summary: Formatting соответствует Prettier
+    type: command
+    command: "git diff --name-only HEAD~1 | xargs -r npx prettier --check 2>&1; test ${PIPESTATUS[0]} -eq 0"
+    severity: warning

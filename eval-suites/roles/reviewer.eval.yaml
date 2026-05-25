@@ -1,0 +1,33 @@
+schema_version: "1"
+id: reviewer-eval
+role: REVIEWER
+description: Проверки качества output агента REVIEWER — наличие findings, severity, рекомендаций
+tags: [reviewer, quality, review]
+
+checks:
+  - id: has-findings
+    summary: Output содержит структурированные findings
+    type: grep
+    target: output
+    pattern: "finding|issue|risk|gap"
+    severity: error
+
+  - id: has-recommendation
+    summary: Есть рекомендация по статусу задачи
+    type: grep
+    target: output
+    pattern: "DONE|BLOCKED|keep|recommend"
+    severity: warning
+
+  - id: references-files
+    summary: Review ссылается на конкретные файлы
+    type: regex
+    target: output
+    pattern: "[a-zA-Z0-9_/-]+\\.(ts|js|json|yaml|md)([:\\s]|$)"
+    severity: warning
+
+  - id: no-code-changes
+    summary: REVIEWER не должен менять код
+    type: command
+    command: "git diff --name-only HEAD~1 | grep -v '\\.md$' | wc -l | awk '{if ($1 > 0) exit 1}'"
+    severity: error
